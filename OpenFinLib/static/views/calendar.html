@@ -1,0 +1,42 @@
+<div>
+    <h2>Bond Coupon Schedule API</h2>
+    <p class="lead">Sample API for getting the calendars for G20 Countries</p>
+
+    <form class="form-inline">
+	  <div class="form-group">
+	    <label for="country">Country</label>
+	    <select class="form-control" ng-model="iso">
+			<option value="" disabled selected>Choose the Country</option>
+			<option value="USA">United States of America</option>
+			<option value="FRA">France</option>
+			<option value="GRE">Greece</option>
+			<option value="GBR">United Kingdom</option>
+	 	</select>
+	  </div>
+	  <div class="form-group">
+	    <label for="Year">Year</label>
+	    <input type="text" class="form-control" id="year"  ng-model="year" placeholder="2016">
+	  </div>
+	  <button type="submit" class="btn btn-primary" ng-click= 'getHoliday()'>Get Calendar</button>
+	</form>
+	<div class="panel panel-default">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Financial Calendar</h3>
+	  </div>
+	  <div class="panel-body">
+	    <table class="table">
+			<tr>
+				<th>Date</th>
+				<th>Holiday Name</th>
+			</tr>
+			<tbody ng-repeat="leave in holidays track by $index">
+				<tr >
+					<td>{{ leave.date}}</td>
+					<td>{{ leave.name }}</td>
+				</tr>
+			</tbody>
+		</table>
+	  </div>
+	</div>
+	
+</div>
