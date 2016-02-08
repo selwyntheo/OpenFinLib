@@ -3,7 +3,8 @@ from workalendar.europe import *
 from dateutil.relativedelta import relativedelta
 from dateutil.parser import parse
 from datetime import datetime
-from constants import *
+import calendar
+from constants import DayCountConv, CalendarFactory
 
 class CSchedule:
 	def get_schedule(self,security):
@@ -91,13 +92,8 @@ class CSchedule:
 
 	def calculate_coupon_rate(self, coupon, prevCouponDate, todayDate, nextCouponDate, frequency, day_count_conv):
 		days_factor = self.days_factor(prevCouponDate ,todayDate, nextCouponDate, day_count_conv,frequency)
+		print days_factor
 		coupon_rate = coupon * days_factor
-		if frequency[-1:] == "M":
-			months = int(frequency[:-2])
-			coupon=coupon/12*months
-		elif frequency[-1:] == "D":
-			days = int(frequency[:-2])
-			coupon = coupon/360*days
 		return coupon_rate
 
 
@@ -124,7 +120,47 @@ class CSchedule:
 				num = self.days_between(todayDate,nextCouponDate)
 			dem = self.days_between(prevCouponDate, nextCouponDate) * self.get_frequency_factor(frequency)
 			factor = num / dem
-			print "factor %s, dem %s, num %s" %(factor, dem, num)
+		elif day_count_conv == DayCountConv.ACT_360:
+			if todayDate == None:
+				num = self.days_between(prevCouponDate,nextCouponDate)
+			else:
+				num = self.days_between(todayDate,nextCouponDate)
+			dem = 360 
+			factor = num / dem
+		elif day_count_conv == DayCountConv.ACT_365:
+			if todayDate == None:
+				num = self.days_between(prevCouponDate,nextCouponDate)
+			else:
+				num = self.days_between(todayDate,nextCouponDate)
+			dem = 365 
+			factor = num / dem
+		elif day_count_conv == DayCountConv.ACT_365L:
+			if todayDate == None:
+				num = self.days_between(prevCouponDate,nextCouponDate)
+			else:
+				num = self.days_between(todayDate,nextCouponDate)
+			if calendar.isleap(nextCouponDate.year):
+				dem = 366
+			else:
+				dem = 365
+			factor = num / dem
+		elif day_count_conv == DayCountConv.ACT_252:
+			if todayDate == None:
+				num = self.days_between(prevCouponDate,nextCouponDate)
+			else:
+				num = self.days_between(todayDate,nextCouponDate)
+			dem = 252
+			factor = num / dem
+
+		elif day_count_conv == DayCountConv.BASIC30_360:
+			if todayDate == None:
+				num = self.days_between_actual(prevCouponDate,nextCouponDate)
+			else:
+				num = self.days_between_actual(todayDate,nextCouponDate)
+			dem = 360
+			factor = num / dem
+
+
 		return factor
 
 
@@ -145,6 +181,10 @@ class CSchedule:
 
 	def days_between(self, d1,d2):
 		return (d2-d1).days * 1.0
+
+
+	def days_between_actual(self, d1,d2):
+		return ((d2.year -d1.year)*360 + (d2.month - d1.month)*30 + (d2.day - d1.day)) * 1.0
 
 
 
