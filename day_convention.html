@@ -148,8 +148,6 @@
 
                     <h2 class="section-heading">Day Count Convention</h2>
 
-                    <blockquote>The dreams of yesterday are the hopes of today and the reality of tomorrow. Science has not yet mastered prophecy. We predict too much for the next year and yet far too little for the next ten.</blockquote>
-
                     <table class="table table-hover">
                         <tbody>
                             <tr>
@@ -272,8 +270,77 @@
                     </pre>
 
 
-                    <p>After constructing the Factory method like above, we can then instantiate the calender object for a given country and do methods like get_next_business_day, get_prev_business_day etc</p>
+                    <p>Different day count methods and their calculations can be implemented using the below formula.</p>
 
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <th>Day Count Methods </th>
+                                <th>Numerator</th>
+                                <th>Denominator</th>
+                                <th>Formula</th>
+                            </tr>
+                            <tr>
+                                <td>ACT/ACT</td>
+                                <td>Actual number of days between two dates</td>
+                                <td>Actual number of days in the coupon period, times the coupon frequency</td>
+                                <td>$$ {(d1 - d2) \over ( Coupon_Period_Days * Frequency) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>ACT/360</td>
+                                <td>Actual number of days between two dates</td>
+                                <td>360</td>
+                                <td>$$ {(d1 - d2) \over ( 360 ) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>ACT/365</td>
+                                <td>Actual number of days between two dates</td>
+                                <td>365</td>
+                                <td>$$ {(d1 - d2) \over ( 365 ) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>ACT/365L</td>
+                                <td>Actual number of days between two dates</td>
+                                <td>365 or 366(Leap Year)</td>
+                                <td>$$ {(d1 - d2) \over ( 365 or 366) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>ACT/252</td>
+                                <td>Actual number of days between two dates</td>
+                                <td>252</td>
+                                <td>$$ {(d1 - d2) \over ( 252 ) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>NL/365</td>
+                                <td>Actual number of days between two dates but never includes Leap Year</td>
+                                <td>365</td>
+                                <td>$$ {(d1 - d2) \over ( 365 ) } $$</td>
+
+                            </tr>
+                            <tr>
+                                <td>30/360</td>
+                                <td>$$ D days =  D2 - D1 + 30(M2 - M1) + 360(Y2-Y1) $$</td>
+                                <td>360</td>
+                                <td>$$ {D days\over ( 360 ) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>30E/360(ISMA)</td>
+                                <td>If D1/D2 falls on 31, change it to 30th
+                                    $$ D days =  D2 - D1 + 30(M2 - M1) + 360(Y2-Y1)$$</td>
+                                <td>360</td>
+                                <td>$$ {D days\over ( 360 ) } $$</td>
+                            </tr>
+                            <tr>
+                                <td>30/365</td>
+                                <td>If D1/D2 falls on 31, change it to 30th
+                                    $$ D days =  D2 - D1 + 30(M2 - M1) + 360(Y2-Y1)$$</td>
+                                <td>365</td>
+                                <td>$$ {D days\over ( 365 ) } $$</td>
+                            </tr>
+                        </tbody>
+                    </table>     
+                    <blockquote>There are several other methods and a detailed explanation of CAD/365 is beyond the scope of this article</blockquote>
+                    <p>The below section describes the heart of the calculation involved in Day Count Convention</p>
                     <pre class="prettyprint">
                         <code class="language-python">
                         def days_factor(self, prevCouponDate, todayDate,nextCouponDate,day_count_conv, frequency,datedDate,lastIncomeDate,maturityDate,couponPeriod):
@@ -341,19 +408,17 @@
                                 dem = 365
                                 factor = num / dem
                             elif day_count_conv == DayCountConv.CAD_365:
-                                if self.calculate_coupon_period(prevCouponDate,nextCouponDate,frequency,datedDate,lastIncomeDate,maturityDate,day_count_conv) !=0:
-                                    num = self.days_between(prevCouponDate,nextCouponDate)
-                                    dem = 365 
-                                    factor = num / dem
-                                else:
-                                    factor = 0.5
+                                num = self.days_between(prevCouponDate,nextCouponDate)
+                                dem = 365 
+                                factor = num / dem
+                            else:
+                                factor = 0.5
                             elif day_count_conv == DayCountConv.JPY_365:
-                                if self.calculate_coupon_period(prevCouponDate,nextCouponDate,frequency,datedDate,lastIncomeDate,maturityDate,day_count_conv) !=0:
-                                    num = self.days_between(prevCouponDate,nextCouponDate)
-                                    dem = 365
-                                    factor = num / dem
-                                else:
-                                    factor = 0.5
+                                num = self.days_between(prevCouponDate,nextCouponDate)
+                                dem = 365
+                                factor = num / dem
+                            else:
+                                factor = 0.5
                                     
                             elif day_count_conv == DayCountConv.NL_365:
                                 freq = int(frequency[:-2])
@@ -379,6 +444,7 @@
                             return factor
                         </code>
                     </pre>
+
                 </div>
             </div>
         </div>
@@ -437,6 +503,14 @@
     <script src="js/clean-blog.min.js"></script>
 
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+    <script type="text/javascript" async  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
 
 </body>
 
